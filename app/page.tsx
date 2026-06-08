@@ -2,11 +2,68 @@ import { buildDigest, CATEGORIES } from "@/lib/digest";
 import { DigestItem, SourceType } from "@/lib/types";
 import { fetchTopAISubstacks } from "@/lib/sources/substack-leaderboard";
 import { fetchTrendingSubstackPosts } from "@/lib/sources/substack-trending";
-import { fetchGithubDigest } from "@/lib/sources/github";
+import { fetchNewGithubRepos, fetchTrendingGithubRepos } from "@/lib/sources/github";
 
 function formatStars(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
   return String(n);
+}
+
+function RepoSection({
+  id,
+  title,
+  subtitle,
+  repos,
+  metric,
+}: {
+  id: string;
+  title: string;
+  subtitle: string;
+  repos: DigestItem[];
+  metric: "stars" | "velocity";
+}) {
+  return (
+    <section id={id} className="scroll-mt-6">
+      <h2 className="mb-1 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+        {title}
+        <span className="ml-2 text-sm font-normal text-zinc-400">{repos.length}</span>
+      </h2>
+      <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</p>
+      <div className="space-y-2">
+        {repos.map((repo, idx) => (
+          <a
+            key={repo.id}
+            href={repo.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-start gap-3 rounded-lg border border-zinc-200 p-3 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+          >
+            <span className="mt-0.5 font-mono text-sm text-zinc-400 dark:text-zinc-600">#{idx + 1}</span>
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate font-medium leading-snug text-zinc-900 dark:text-zinc-100">
+                {repo.title}
+              </h3>
+              {repo.snippet && (
+                <p className="mt-0.5 line-clamp-2 text-sm text-zinc-500 dark:text-zinc-400">{repo.snippet}</p>
+              )}
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              {metric === "velocity" && typeof repo.velocity === "number" && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                  +{formatStars(repo.velocity)}/day
+                </span>
+              )}
+              {typeof repo.score === "number" && (
+                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800 dark:bg-violet-950 dark:text-violet-300">
+                  ★ {formatStars(repo.score)}
+                </span>
+              )}
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export const dynamic = "force-dynamic";
@@ -95,10 +152,11 @@ function slugify(s: string): string {
 }
 
 export default async function Home() {
-  const [digest, topSubstacks, githubRepos] = await Promise.all([
+  const [digest, topSubstacks, newRepos, trendingRepos] = await Promise.all([
     buildDigest(),
     fetchTopAISubstacks(10),
-    fetchGithubDigest().catch(() => []),
+    fetchNewGithubRepos().catch(() => []),
+    fetchTrendingGithubRepos().catch(() => []),
   ]);
   const trendingPosts = await fetchTrendingSubstackPosts(topSubstacks, 10).catch(() => []);
   const today = new Date().toLocaleDateString(undefined, {
@@ -111,7 +169,8 @@ export default async function Home() {
 
   const navSections = [
     ...CATEGORIES.filter((c) => digest[c].length > 0),
-    ...(githubRepos.length > 0 ? ["Trending GitHub Repos"] : []),
+    ...(trendingRepos.length > 0 ? ["Trending GitHub Repos"] : []),
+    ...(newRepos.length > 0 ? ["New GitHub Repos"] : []),
     ...(topSubstacks.length > 0 ? ["Top AI Substacks"] : []),
     ...(trendingPosts.length > 0 ? ["Trending Substack Posts"] : []),
   ];
@@ -165,42 +224,24 @@ export default async function Home() {
             );
           })}
 
-          {githubRepos.length > 0 && (
-            <section id={slugify("Trending GitHub Repos")} className="scroll-mt-6">
-              <h2 className="mb-1 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-                Trending GitHub Repos
-                <span className="ml-2 text-sm font-normal text-zinc-400">{githubRepos.length}</span>
-              </h2>
-              <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
-                New AI repos from the last 14 days, ranked by stars
-              </p>
-              <div className="space-y-2">
-                {githubRepos.map((repo, idx) => (
-                  <a
-                    key={repo.id}
-                    href={repo.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-3 rounded-lg border border-zinc-200 p-3 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
-                  >
-                    <span className="mt-0.5 font-mono text-sm text-zinc-400 dark:text-zinc-600">#{idx + 1}</span>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-medium leading-snug text-zinc-900 dark:text-zinc-100">
-                        {repo.title}
-                      </h3>
-                      {repo.snippet && (
-                        <p className="mt-0.5 line-clamp-2 text-sm text-zinc-500 dark:text-zinc-400">{repo.snippet}</p>
-                      )}
-                    </div>
-                    {typeof repo.score === "number" && (
-                      <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                        ★ {formatStars(repo.score)}
-                      </span>
-                    )}
-                  </a>
-                ))}
-              </div>
-            </section>
+          {trendingRepos.length > 0 && (
+            <RepoSection
+              id={slugify("Trending GitHub Repos")}
+              title="Trending GitHub Repos"
+              subtitle="AI repos gaining stars fastest, ranked by stars per day"
+              repos={trendingRepos}
+              metric="velocity"
+            />
+          )}
+
+          {newRepos.length > 0 && (
+            <RepoSection
+              id={slugify("New GitHub Repos")}
+              title="New GitHub Repos"
+              subtitle="Freshly-created AI repos from the last 14 days, ranked by stars"
+              repos={newRepos}
+              metric="stars"
+            />
           )}
 
           {topSubstacks.length > 0 && (

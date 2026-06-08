@@ -10,6 +10,8 @@ export interface DigestItem {
   sourceName: string;
   author?: string;
   score?: number;
+  /** GitHub repos only: approximate stars gained per day since creation. */
+  velocity?: number;
   snippet?: string;
   publishedAt: string;
   category: Category;
