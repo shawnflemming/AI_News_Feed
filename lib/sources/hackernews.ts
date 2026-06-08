@@ -1,17 +1,18 @@
-import { DigestItem } from "../types";
+import { Category, DigestItem } from "../types";
 import { categorize } from "../categorize";
 
 // X/Twitter's API requires a paid key, and public Nitter mirrors have gone
 // dark/unreliable, so we use Hacker News' free Algolia search API filtered to
 // AI topics as a stand-in for "what tech Twitter is buzzing about."
-const QUERIES = [
-  "AI agent",
-  "LLM",
-  "OpenAI",
-  "Claude",
-  "Gemini",
-  "prompt engineering",
-  "context engineering",
+// A query may pin a category so topic searches always land in that section.
+const QUERIES: { q: string; category?: Category }[] = [
+  { q: "AI agent" },
+  { q: "LLM" },
+  { q: "OpenAI" },
+  { q: "Claude" },
+  { q: "Gemini" },
+  { q: "prompt engineering", category: "Prompt Engineering" },
+  { q: "context engineering", category: "Context Engineering" },
 ];
 
 interface HNHit {
@@ -26,11 +27,11 @@ interface HNHit {
 
 export async function fetchHackerNewsDigest(): Promise<DigestItem[]> {
   const results = await Promise.allSettled(
-    QUERIES.map(async (query) => {
+    QUERIES.map(async ({ q, category }) => {
       const res = await fetch(
-        `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&numericFilters=created_at_i>${Math.floor(Date.now() / 1000) - 86400}`
+        `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(q)}&tags=story&numericFilters=created_at_i>${Math.floor(Date.now() / 1000) - 86400}`
       );
-      if (!res.ok) throw new Error(`HN search failed for "${query}": ${res.status}`);
+      if (!res.ok) throw new Error(`HN search failed for "${q}": ${res.status}`);
       const json = await res.json();
       const hits: HNHit[] = json?.hits ?? [];
       return hits.slice(0, 4).map((hit): DigestItem => {
@@ -45,7 +46,7 @@ export async function fetchHackerNewsDigest(): Promise<DigestItem[]> {
           score: hit.points,
           snippet: hit.story_text?.slice(0, 220),
           publishedAt: hit.created_at,
-          category: categorize(text),
+          category: category ?? categorize(text),
         };
       });
     })
