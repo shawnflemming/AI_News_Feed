@@ -36,7 +36,7 @@ function RepoSection({
             href={repo.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-start gap-3 rounded-lg border border-zinc-200 p-3 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+            className="flex items-start gap-3 rounded-lg border border-zinc-200 p-3 transition-colors hover:border-zinc-400 dark:border-zinc-600 dark:hover:border-zinc-500"
           >
             <span className="mt-0.5 font-mono text-sm text-zinc-400 dark:text-zinc-600">#{idx + 1}</span>
             <div className="min-w-0 flex-1">
@@ -98,7 +98,7 @@ function ItemRow({ item }: { item: DigestItem }) {
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="block rounded-lg border border-zinc-200 p-3 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+      className="block rounded-lg border border-zinc-200 p-3 transition-colors hover:border-zinc-400 dark:border-zinc-600 dark:hover:border-zinc-500"
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="font-medium leading-snug text-zinc-900 dark:text-zinc-100">{item.title}</h3>
@@ -176,8 +176,8 @@ export default async function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black lg:flex">
-      <nav className="shrink-0 border-b border-zinc-200 px-6 py-6 dark:border-zinc-800 lg:sticky lg:top-0 lg:h-screen lg:w-56 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+    <div className="min-h-screen font-sans lg:flex">
+      <nav className="shrink-0 border-b border-zinc-200 px-6 py-6 dark:border-zinc-600 lg:sticky lg:top-0 lg:h-screen lg:w-56 lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
           Sections
         </h2>
@@ -260,7 +260,7 @@ export default async function Home() {
                     href={pub.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                    className="block rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-600 dark:hover:border-zinc-500"
                   >
                     <div className="mb-1 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                       <span className="font-mono text-zinc-400 dark:text-zinc-600">#{idx + 1}</span>
@@ -292,7 +292,7 @@ export default async function Home() {
                     href={post.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                    className="block rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-600 dark:hover:border-zinc-500"
                   >
                     <div className="mb-1 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                       <span className="font-mono text-zinc-400 dark:text-zinc-600">#{idx + 1}</span>
