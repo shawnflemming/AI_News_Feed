@@ -21,34 +21,71 @@ function timeAgo(iso: string): string {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-function ItemCard({ item }: { item: DigestItem }) {
+function trendIndicator(item: DigestItem): string | null {
+  if (typeof item.score !== "number") return null;
+  if (item.score >= 200) return "🔥🔥 trending";
+  if (item.score >= 50) return "🔥 rising";
+  return `▲ ${item.score}`;
+}
+
+function ItemRow({ item }: { item: DigestItem }) {
+  const trend = trendIndicator(item);
   return (
     <a
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="block rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+      className="block rounded-lg border border-zinc-200 p-3 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
     >
-      <div className="mb-2 flex items-center gap-2 text-xs">
-        <span className={`rounded-full px-2 py-0.5 font-medium ${SOURCE_STYLES[item.source]}`}>
-          {item.source}
-        </span>
-        <span className="text-zinc-500 dark:text-zinc-400">{item.sourceName}</span>
-        <span className="text-zinc-400 dark:text-zinc-600">·</span>
-        <span className="text-zinc-500 dark:text-zinc-400">{timeAgo(item.publishedAt)}</span>
-        {typeof item.score === "number" && (
-          <>
-            <span className="text-zinc-400 dark:text-zinc-600">·</span>
-            <span className="text-zinc-500 dark:text-zinc-400">▲ {item.score}</span>
-          </>
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="font-medium leading-snug text-zinc-900 dark:text-zinc-100">{item.title}</h3>
+        {trend && (
+          <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+            {trend}
+          </span>
         )}
       </div>
-      <h3 className="font-medium leading-snug text-zinc-900 dark:text-zinc-100">{item.title}</h3>
-      {item.snippet && (
-        <p className="mt-1 line-clamp-2 text-sm text-zinc-500 dark:text-zinc-400">{item.snippet}</p>
-      )}
+      <div className="mt-1 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <span>{timeAgo(item.publishedAt)}</span>
+        {item.snippet && <span className="truncate">· {item.snippet}</span>}
+      </div>
     </a>
   );
+}
+
+function SourceGroup({ items }: { items: DigestItem[] }) {
+  const sourceType = items[0].source;
+  const sourceName = items[0].sourceName;
+  return (
+    <div>
+      <div className="mb-2 flex items-center gap-2">
+        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${SOURCE_STYLES[sourceType]}`}>
+          {sourceType}
+        </span>
+        <h4 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{sourceName}</h4>
+        <span className="text-xs text-zinc-400">{items.length}</span>
+      </div>
+      <div className="space-y-2">
+        {items.map((item) => (
+          <ItemRow key={item.id} item={item} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function groupBySource(items: DigestItem[]): DigestItem[][] {
+  const map = new Map<string, DigestItem[]>();
+  for (const item of items) {
+    const key = `${item.source}::${item.sourceName}`;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(item);
+  }
+  return Array.from(map.values());
+}
+
+function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
 export default async function Home() {
@@ -62,9 +99,33 @@ export default async function Home() {
   });
   const total = CATEGORIES.reduce((sum, c) => sum + digest[c].length, 0);
 
+  const navSections = [
+    ...CATEGORIES.filter((c) => digest[c].length > 0),
+    ...(topSubstacks.length > 0 ? ["Top AI Substacks"] : []),
+    ...(trendingPosts.length > 0 ? ["Trending Substack Posts"] : []),
+  ];
+
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
-      <main className="mx-auto max-w-5xl px-6 py-12">
+    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black lg:flex">
+      <nav className="shrink-0 border-b border-zinc-200 px-6 py-6 dark:border-zinc-800 lg:sticky lg:top-0 lg:h-screen lg:w-56 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+          Sections
+        </h2>
+        <ul className="space-y-1">
+          {navSections.map((name) => (
+            <li key={name}>
+              <a
+                href={`#${slugify(name)}`}
+                className="block rounded-md px-2 py-1 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+              >
+                {name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <main className="mx-auto max-w-5xl flex-1 px-6 py-12">
         <header className="mb-10">
           <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             AI Digest
@@ -79,14 +140,14 @@ export default async function Home() {
             const items = digest[category];
             if (items.length === 0) return null;
             return (
-              <section key={category}>
+              <section key={category} id={slugify(category)} className="scroll-mt-6">
                 <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
                   {category}
                   <span className="ml-2 text-sm font-normal text-zinc-400">{items.length}</span>
                 </h2>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {items.map((item) => (
-                    <ItemCard key={item.id} item={item} />
+                <div className="space-y-6">
+                  {groupBySource(items).map((group) => (
+                    <SourceGroup key={`${group[0].source}::${group[0].sourceName}`} items={group} />
                   ))}
                 </div>
               </section>
@@ -94,7 +155,7 @@ export default async function Home() {
           })}
 
           {topSubstacks.length > 0 && (
-            <section>
+            <section id={slugify("Top AI Substacks")} className="scroll-mt-6">
               <h2 className="mb-1 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
                 Top AI Substacks
                 <span className="ml-2 text-sm font-normal text-zinc-400">{topSubstacks.length}</span>
@@ -126,7 +187,7 @@ export default async function Home() {
           )}
 
           {trendingPosts.length > 0 && (
-            <section>
+            <section id={slugify("Trending Substack Posts")} className="scroll-mt-6">
               <h2 className="mb-1 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
                 Trending Substack Posts
                 <span className="ml-2 text-sm font-normal text-zinc-400">{trendingPosts.length}</span>
