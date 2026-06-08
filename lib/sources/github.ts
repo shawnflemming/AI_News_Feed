@@ -56,5 +56,6 @@ export async function fetchGithubDigest(): Promise<DigestItem[]> {
   return results
     .filter((r): r is PromiseFulfilledResult<DigestItem[]> => r.status === "fulfilled")
     .flatMap((r) => r.value)
-    .filter((item) => (seen.has(item.id) ? false : (seen.add(item.id), true)));
+    .filter((item) => (seen.has(item.id) ? false : (seen.add(item.id), true)))
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 }

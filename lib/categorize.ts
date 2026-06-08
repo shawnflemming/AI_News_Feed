@@ -6,10 +6,6 @@ const RULES: { category: Category; keywords: RegExp }[] = [
     keywords: /\b(how to|tutorial|guide|prompt|workflow|tip|trick|learn(ed|ing)?|walkthrough|cheat ?sheet)\b/i,
   },
   {
-    category: "Memes & Hot Takes",
-    keywords: /\b(meme|lol|lmao|hot take|unpopular opinion|rant|funny|joke|🤣|😂)\b/i,
-  },
-  {
     category: "Research & News",
     keywords: /\b(paper|research|study|benchmark|arxiv|announc(e|ed|ement|ing)|launch(es|ed)?|release[ds]?|funding|raises?|acqui(re|sition)|report)\b/i,
   },

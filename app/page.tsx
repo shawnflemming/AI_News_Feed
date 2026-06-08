@@ -2,6 +2,12 @@ import { buildDigest, CATEGORIES } from "@/lib/digest";
 import { DigestItem, SourceType } from "@/lib/types";
 import { fetchTopAISubstacks } from "@/lib/sources/substack-leaderboard";
 import { fetchTrendingSubstackPosts } from "@/lib/sources/substack-trending";
+import { fetchGithubDigest } from "@/lib/sources/github";
+
+function formatStars(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  return String(n);
+}
 
 export const dynamic = "force-dynamic";
 
@@ -89,7 +95,11 @@ function slugify(s: string): string {
 }
 
 export default async function Home() {
-  const [digest, topSubstacks] = await Promise.all([buildDigest(), fetchTopAISubstacks(10)]);
+  const [digest, topSubstacks, githubRepos] = await Promise.all([
+    buildDigest(),
+    fetchTopAISubstacks(10),
+    fetchGithubDigest().catch(() => []),
+  ]);
   const trendingPosts = await fetchTrendingSubstackPosts(topSubstacks, 10).catch(() => []);
   const today = new Date().toLocaleDateString(undefined, {
     weekday: "long",
@@ -101,6 +111,7 @@ export default async function Home() {
 
   const navSections = [
     ...CATEGORIES.filter((c) => digest[c].length > 0),
+    ...(githubRepos.length > 0 ? ["Trending GitHub Repos"] : []),
     ...(topSubstacks.length > 0 ? ["Top AI Substacks"] : []),
     ...(trendingPosts.length > 0 ? ["Trending Substack Posts"] : []),
   ];
@@ -153,6 +164,44 @@ export default async function Home() {
               </section>
             );
           })}
+
+          {githubRepos.length > 0 && (
+            <section id={slugify("Trending GitHub Repos")} className="scroll-mt-6">
+              <h2 className="mb-1 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+                Trending GitHub Repos
+                <span className="ml-2 text-sm font-normal text-zinc-400">{githubRepos.length}</span>
+              </h2>
+              <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
+                New AI repos from the last 14 days, ranked by stars
+              </p>
+              <div className="space-y-2">
+                {githubRepos.map((repo, idx) => (
+                  <a
+                    key={repo.id}
+                    href={repo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-3 rounded-lg border border-zinc-200 p-3 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                  >
+                    <span className="mt-0.5 font-mono text-sm text-zinc-400 dark:text-zinc-600">#{idx + 1}</span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-medium leading-snug text-zinc-900 dark:text-zinc-100">
+                        {repo.title}
+                      </h3>
+                      {repo.snippet && (
+                        <p className="mt-0.5 line-clamp-2 text-sm text-zinc-500 dark:text-zinc-400">{repo.snippet}</p>
+                      )}
+                    </div>
+                    {typeof repo.score === "number" && (
+                      <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                        ★ {formatStars(repo.score)}
+                      </span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
 
           {topSubstacks.length > 0 && (
             <section id={slugify("Top AI Substacks")} className="scroll-mt-6">
