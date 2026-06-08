@@ -1,4 +1,4 @@
-import { buildDigest, CATEGORIES } from "@/lib/digest";
+import { buildDigest } from "@/lib/digest";
 import { fetchTopAISubstacks } from "@/lib/sources/substack-leaderboard";
 import { fetchTrendingSubstackPosts } from "@/lib/sources/substack-trending";
 import { fetchNewGithubRepos, fetchTrendingGithubRepos } from "@/lib/sources/github";
@@ -20,12 +20,9 @@ export default async function Home() {
     month: "long",
     day: "numeric",
   });
-  const total = CATEGORIES.reduce((sum, c) => sum + digest[c].length, 0);
-
   return (
     <DigestView
       today={today}
-      total={total}
       categories={digest}
       trendingRepos={trendingRepos}
       newRepos={newRepos}

@@ -94,7 +94,6 @@ type TabKey = Category | "GitHub" | "Substacks";
 
 export default function DigestView({
   today,
-  total,
   categories,
   trendingRepos,
   newRepos,
@@ -102,7 +101,6 @@ export default function DigestView({
   trendingPosts,
 }: {
   today: string;
-  total: number;
   categories: Record<Category, DigestItem[]>;
   trendingRepos: DigestItem[];
   newRepos: DigestItem[];
@@ -160,9 +158,6 @@ export default function DigestView({
             AI Digest
             <span className="ml-3 align-middle text-base font-normal text-zinc-500">({today})</span>
           </h1>
-          <p className="mt-2 text-sm text-zinc-500">
-            {total} stories curated from DEV.to, Substack, Hacker News, GitHub &amp; Bluesky
-          </p>
         </header>
 
         {/* Source filter badges */}
@@ -245,6 +240,9 @@ export default function DigestView({
                       meta={
                         <>
                           <SourceBadge source="GitHub" />
+                          {typeof repo.score === "number" && (
+                            <span className="text-amber-400">★ {formatNum(repo.score)}</span>
+                          )}
                           {typeof repo.velocity === "number" && (
                             <span className="text-amber-500">+{formatNum(repo.velocity)}/day</span>
                           )}
@@ -268,6 +266,9 @@ export default function DigestView({
                       meta={
                         <>
                           <SourceBadge source="GitHub" />
+                          {typeof repo.score === "number" && (
+                            <span className="text-amber-400">★ {formatNum(repo.score)}</span>
+                          )}
                           <span>{timeAgo(repo.publishedAt)}</span>
                         </>
                       }
