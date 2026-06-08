@@ -5,7 +5,7 @@ import { categorize } from "../categorize";
 // by network security"), which makes them unusable from a hosted server. DEV.to's
 // public API is free, keyless, and a good proxy for "what the AI builder
 // community is discussing right now."
-const TAGS = ["ai", "machinelearning", "llm", "openai", "chatgpt"];
+const TAGS = ["ai", "machinelearning", "llm", "openai", "chatgpt", "promptengineering"];
 
 interface DevToArticle {
   id: number;

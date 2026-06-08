@@ -2,6 +2,16 @@ import { Category } from "./types";
 
 const RULES: { category: Category; keywords: RegExp }[] = [
   {
+    category: "Prompt Engineering",
+    keywords:
+      /\bprompt engineering\b|\bprompting\b|\bsystem prompts?\b|\bmeta[- ]?prompt|few[- ]?shot|chain[- ]of[- ]thought|\bprompt (design|template|injection|library)\b/i,
+  },
+  {
+    category: "Context Engineering",
+    keywords:
+      /\bcontext engineering\b|\bcontext window\b|\bcontext management\b|retrieval[- ]augmented|\brag\b|long[- ]context|\bcontext length\b|\bmemory (management|systems?)\b/i,
+  },
+  {
     category: "Tips & Tutorials",
     keywords: /\b(how to|tutorial|guide|prompt|workflow|tip|trick|learn(ed|ing)?|walkthrough|cheat ?sheet)\b/i,
   },

@@ -8,6 +8,8 @@ export const CATEGORIES: Category[] = [
   "Tools & Products",
   "Tips & Tutorials",
   "Research & News",
+  "Prompt Engineering",
+  "Context Engineering",
 ];
 
 export async function buildDigest(): Promise<Record<Category, DigestItem[]>> {
@@ -26,6 +28,8 @@ export async function buildDigest(): Promise<Record<Category, DigestItem[]>> {
     "Tools & Products": [],
     "Tips & Tutorials": [],
     "Research & News": [],
+    "Prompt Engineering": [],
+    "Context Engineering": [],
   };
 
   for (const item of all) grouped[item.category].push(item);

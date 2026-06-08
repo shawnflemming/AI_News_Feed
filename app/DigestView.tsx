@@ -92,6 +92,13 @@ function SectionHeading({ label, count }: { label: string; count: number }) {
 
 type TabKey = Category | "GitHub" | "Substacks";
 
+const CATEGORY_TAB_LABELS: Partial<Record<Category, string>> = {
+  "Tips & Tutorials": "Tutorials",
+  "Research & News": "Research",
+  "Prompt Engineering": "Prompt Eng",
+  "Context Engineering": "Context Eng",
+};
+
 export default function DigestView({
   today,
   categories,
@@ -116,7 +123,7 @@ export default function DigestView({
   const tabs: { key: TabKey; label: string }[] = [
     ...newsCategories.map((c) => ({
       key: c as TabKey,
-      label: c === "Tips & Tutorials" ? "Tutorials" : c === "Research & News" ? "Research" : c,
+      label: CATEGORY_TAB_LABELS[c] ?? c,
     })),
     ...(hasGithub ? [{ key: "GitHub" as TabKey, label: "GitHub" }] : []),
     ...(hasSubstacks ? [{ key: "Substacks" as TabKey, label: "Substacks" }] : []),

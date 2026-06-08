@@ -4,7 +4,15 @@ import { categorize } from "../categorize";
 // X/Twitter's API requires a paid key, and public Nitter mirrors have gone
 // dark/unreliable, so we use Hacker News' free Algolia search API filtered to
 // AI topics as a stand-in for "what tech Twitter is buzzing about."
-const QUERIES = ["AI agent", "LLM", "OpenAI", "Claude", "Gemini"];
+const QUERIES = [
+  "AI agent",
+  "LLM",
+  "OpenAI",
+  "Claude",
+  "Gemini",
+  "prompt engineering",
+  "context engineering",
+];
 
 interface HNHit {
   objectID: string;

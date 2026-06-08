@@ -1,4 +1,9 @@
-export type Category = "Tools & Products" | "Tips & Tutorials" | "Research & News";
+export type Category =
+  | "Tools & Products"
+  | "Tips & Tutorials"
+  | "Research & News"
+  | "Prompt Engineering"
+  | "Context Engineering";
 
 export type SourceType = "DevTo" | "Substack" | "HackerNews" | "GitHub" | "Bluesky";
 
